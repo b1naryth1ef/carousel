@@ -33,7 +33,10 @@ class Resource(object):
         self.zk.create(self.path, str.encode(json.dumps(meta)))
 
     def try_elect_leader(self, node):
-        self.zk.create(self.leader_path, str.encode(node.id), ephemeral=True)
+        try:
+            self.zk.create(self.leader_path, str.encode(node.id), ephemeral=True)
+        except kazoo.exceptions.NodeExistsError:
+            return False
 
         if self.zk.exists(os.path.join(self.path, 'leader')):
             self.zk.delete(os.path.join(self.path, 'leader'))
